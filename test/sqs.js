@@ -1,7 +1,5 @@
 'use strict'
 
-const util = require('util')
-
 const Promise = require('bluebird')
 
 process.env.AWS_ACCESS_KEY_ID = '1'
@@ -28,15 +26,18 @@ describe('sqs', function() {
                     StringValue: 'tester',
                     DataType: 'String'
                 }
-            }
+            },
         }).promise()
         
-        await Promise.delay(5000)
-        
-        const response = await sqs.receiveMessage({
-            QueueUrl: queueUrl
+        const { Messages: messages } = await sqs.receiveMessage({
+            QueueUrl: queueUrl,
+            WaitTimeSeconds: 5
         }).promise()
         
-        console.log(util.inspect(response))
+        expect(messages).to.be.an.array().and.have.length(1)
+        const message = messages[0]
+        expect(message).to.include({
+            Body: 'Hello queue'
+        })
     })
 })
